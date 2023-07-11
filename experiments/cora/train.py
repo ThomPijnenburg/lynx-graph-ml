@@ -127,8 +127,10 @@ if __name__ == "__main__":
 
     dataset = load_cora(dataset_path)
 
-    run_training(model_name=args.model,
-                 dataset=dataset,
-                 c_hidden=32,  # unused
-                 epochs=args.epochs,
-                 outdir=model_path)
+    test_scores = run_training(model_name=args.model,
+                               dataset=dataset,
+                               c_hidden=32,  # unused
+                               epochs=args.epochs,
+                               outdir=model_path)
+
+    print(test_scores)

@@ -14,6 +14,7 @@ torch-sparse = "^0.6.17"
 torch-scatter = "^2.1.1"
 torch-cluster = "^1.6.1"
 torch-spline-conv = "^1.2.2"
+tqdm = "^4.65.0"
 
 
 [tool.poetry.group.dev.dependencies]

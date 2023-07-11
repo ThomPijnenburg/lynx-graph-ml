@@ -24,7 +24,7 @@ class LightningGNN(pl.LightningModule):
         if model_name == "GCN":
             self.model = GCNModel(**model_kwargs)
         else:
-            print("derp")
+            raise ValueError(f"Model {model_name} not implemented...")
 
         self.loss_module = nn.CrossEntropyLoss()
 
@@ -87,7 +87,7 @@ def run_training(model_name: str, dataset, epochs, outdir, **model_kwargs):
         max_epochs=epochs,
         accelerator="auto",
         # devices=AVAIL_GPUS,
-        callbacks=[TQDMProgressBar(refresh_rate=0)],
+        callbacks=[TQDMProgressBar(refresh_rate=1)],
         log_every_n_steps=1
     )
 
@@ -129,6 +129,6 @@ if __name__ == "__main__":
 
     run_training(model_name=args.model,
                  dataset=dataset,
-                 c_hidden=32,
+                 c_hidden=32,  # unused
                  epochs=args.epochs,
                  outdir=model_path)

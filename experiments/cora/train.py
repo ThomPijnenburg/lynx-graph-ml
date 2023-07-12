@@ -9,6 +9,7 @@ from argparse import ArgumentParser
 
 from pathlib import Path
 from pytorch_lightning.callbacks import TQDMProgressBar
+from pytorch_lightning.loggers import TensorBoardLogger
 
 from lynks.models import GCNModel
 from lynks.data import load_cora
@@ -67,7 +68,8 @@ class LightningGNN(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        _, acc = self.forward(batch, mode="valid")
+        loss, acc = self.forward(batch, mode="valid")
+        self.log("valid_loss", loss)
         self.log("valid_acc", acc)
 
     def test_step(self, batch, batch_idx):
@@ -75,19 +77,21 @@ class LightningGNN(pl.LightningModule):
         self.log("test_acc", acc)
 
 
-def run_training(model_name: str, dataset, epochs, outdir, **model_kwargs):
+def run_training(model_name: str, dataset, epochs, outdir, logging_dir, **model_kwargs):
     outdir.mkdir(exist_ok=True, parents=True)
 
     # init dataloader
     dataloader = tg.loader.DataLoader(dataset, batch_size=1, num_workers=4)
+    logger = TensorBoardLogger(save_dir=logging_dir, name="cora-gcn")
 
     # set up Trainer
     trainer = pl.Trainer(
         default_root_dir=outdir,
         max_epochs=epochs,
         accelerator="auto",
-        # devices=AVAIL_GPUS,
+        devices=1,
         callbacks=[TQDMProgressBar(refresh_rate=1)],
+        logger=logger,
         log_every_n_steps=1
     )
 
@@ -122,8 +126,10 @@ if __name__ == "__main__":
 
     dataset_path = data_root.joinpath("Planetoid")
     model_path = data_root.joinpath("models")
+    logs_path = data_root.joinpath("logs")
 
     model_path.mkdir(parents=True, exist_ok=True)
+    logs_path.mkdir(parents=True, exist_ok=True)
 
     dataset = load_cora(dataset_path)
 
@@ -131,6 +137,7 @@ if __name__ == "__main__":
                                dataset=dataset,
                                c_hidden=32,  # unused
                                epochs=args.epochs,
-                               outdir=model_path)
+                               outdir=model_path,
+                               logging_dir=logs_path)
 
     print(test_scores)
